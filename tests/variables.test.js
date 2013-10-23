@@ -168,3 +168,24 @@ describe('Variables', function () {
     });
   });
 });
+
+describe('Precedence', function () {
+  it(': window/globals should not take precedence over context variables', function () {
+    /*global g:true, window:true*/
+    g = (typeof window !== 'undefined') ? window : global;
+    g._company = 'GloboChem';
+    expect(swig.render('{{ _company }}', {_company: 'MomNPopCo'})).to.equal('MomNPopCo');
+    delete g._company;
+  });
+
+  it(': Browser DOM elements with matching element ids should not take precedence over context variables', function () {
+    /*global document:true */
+    if (typeof document !== 'undefined') {
+      var div = document.createElement('div'),
+        mochadiv = document.getElementById('mocha');
+      div.setAttribute('id', 'company');
+      document.body.insertBefore(div, mochadiv);
+      expect(swig.render('{{ company }}', {company: 'MomNPopCo', autoescape: true})).to.equal('MomNPopCo');
+    }
+  });
+});
